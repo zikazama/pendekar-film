@@ -54,9 +54,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 fragment = HomeFragment()
                 title = getString(R.string.app_name)
             }
-            R.id.nav_favorite -> {
-                fragment = FavoriteFragment()
-                title = getString(R.string.menu_favorite)
+
+            R.id.nav_map -> {
+                val uri = Uri.parse("tourismapp://maps")
+                startActivity(Intent(Intent.ACTION_VIEW, uri))
             }
 
         }

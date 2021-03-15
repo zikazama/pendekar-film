@@ -1,10 +1,16 @@
 package com.dicoding.tourismapp.maps
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.dicoding.tourismapp.core.data.Resource
+import com.dicoding.tourismapp.core.ui.TourismAdapter
+import com.dicoding.tourismapp.detail.DetailTourismActivity
 import com.dicoding.tourismapp.di.MapsModuleDependencies
 import com.dicoding.tourismapp.maps.databinding.ActivityMapsBinding
 import dagger.hilt.android.EntryPointAccessors
@@ -36,27 +42,29 @@ class MapsActivity : AppCompatActivity() {
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        supportActionBar?.title = "Tourism Map"
+        supportActionBar?.title = "Favorite Film"
 
         getTourismData()
     }
 
     private fun getTourismData() {
+
+        val tourismAdapter = TourismAdapter()
+        tourismAdapter.onItemClick = { selectedData ->
+            val intent = Intent(this, DetailTourismActivity::class.java)
+            intent.putExtra(DetailTourismActivity.EXTRA_DATA, selectedData)
+            startActivity(intent)
+        }
+
         mapsViewModel.tourism.observe(this, { tourism ->
-            if (tourism != null) {
-                when (tourism) {
-                    is Resource.Loading -> binding.progressBar.visibility = View.VISIBLE
-                    is Resource.Success -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.tvMaps.text = "This is map of ${tourism.data?.get(0)?.original_title}"
-                    }
-                    is Resource.Error -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.tvError.visibility = View.VISIBLE
-                        binding.tvError.text = tourism.message
-                    }
-                }
-            }
+            tourismAdapter.setData(tourism)
+            binding.viewEmpty.visibility = if (tourism.isNotEmpty()) View.GONE else View.VISIBLE
         })
+
+        with(binding.rvTourism) {
+            layoutManager = LinearLayoutManager(context)
+            setHasFixedSize(true)
+            adapter = tourismAdapter
+        }
     }
 }
